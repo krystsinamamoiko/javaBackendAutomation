@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import ru.gb.backendautomation.model.complexSearch.ClassifyCuisineResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,95 +36,89 @@ public class SpoonAcularPostTest extends AbstractTest {
     @Test
     @DisplayName("Verify case with no parameters")
     void testClassifyCuisineNoParams() {
-        Response response =
+        ClassifyCuisineResponse classifyCuisineResponse =
             given()
-                .baseUri(getBaseUrl())
-                .queryParam("apiKey", getApiKey())
-                .contentType(ContentType.URLENC)
+                .spec(getRequestUrlencSpecification())
             .when()
-                .post("recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine")
             .then()
-                .statusCode(200)
+                .spec(getResponseSpecification())
                 .extract()
-                .response();
+                .response()
+                .body()
+                .as(ClassifyCuisineResponse.class);
 
-        assertThat(response.header("Content-Type"), is("application/json"));
-        assertThat(response.jsonPath().get("cuisine"), is(Cuisines.MEDITERRANEAN.title));
-        assertThat(response.jsonPath().get("confidence"), is(0.0f));
-        assertThat(response.jsonPath().getList("cuisines", String.class),
-            is(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))));
+        assertThat(classifyCuisineResponse.getCuisine(), is(Cuisines.MEDITERRANEAN.title));
+        assertThat(classifyCuisineResponse.getConfidence(), is(0.0));
+        assertThat(classifyCuisineResponse.getCuisines().containsAll(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))),
+            is(true));
     }
 
     @Test
     @DisplayName("Verify case with a valid title parameter")
     void testClassifyCuisineValidTitleParam() {
-        Response response =
+        ClassifyCuisineResponse classifyCuisineResponse =
             given()
-                .baseUri(getBaseUrl())
-                .queryParam("apiKey", getApiKey())
-                .contentType(ContentType.URLENC)
+                .spec(getRequestUrlencSpecification())
                 .formParam("title","burger")
             .when()
-                .post("recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine")
             .then()
-                .statusCode(200)
-                .log()
-                .all()
+                .spec(getResponseSpecification())
                 .extract()
-                .response();
+                .response()
+                .body()
+                .as(ClassifyCuisineResponse.class);
 
-        assertThat(response.header("Content-Type"), is("application/json"));
-        assertThat(response.jsonPath().get("cuisine"), is(Cuisines.AMERICAN.title));
-        assertThat(response.jsonPath().get("confidence"), is(0.85f));
-        assertThat(response.jsonPath().getList("cuisines", String.class),
-            is(new ArrayList<>(Arrays.asList(Cuisines.AMERICAN.title))));
+        assertThat(classifyCuisineResponse.getCuisine(), is(Cuisines.AMERICAN.title));
+        assertThat(classifyCuisineResponse.getConfidence(), is(0.85));
+        assertThat(classifyCuisineResponse.getCuisines().containsAll(new ArrayList<>(Arrays.asList(Cuisines.AMERICAN.title))),
+            is(true));
     }
 
     @Test
     @DisplayName("Verify case with a non existing title parameter")
     void testClassifyCuisineNonExistingTitleParam() {
-        Response response =
+        ClassifyCuisineResponse classifyCuisineResponse =
             given()
-                .baseUri(getBaseUrl())
-                .queryParam("apiKey", getApiKey())
-                .contentType(ContentType.URLENC)
+                .spec(getRequestUrlencSpecification())
                 .formParam("title","something unexciting")
             .when()
-                .post("recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine")
             .then()
-                .statusCode(200)
-                .log()
-                .all()
+                .spec(getResponseSpecification())
                 .extract()
-                .response();
+                .response()
+                .body()
+                .as(ClassifyCuisineResponse.class);
 
-        assertThat(response.header("Content-Type"), is("application/json"));
-        assertThat(response.jsonPath().get("cuisine"), is(Cuisines.MEDITERRANEAN.title));
-        assertThat(response.jsonPath().get("confidence"), is(0.0f));
-        assertThat(response.jsonPath().getList("cuisines", String.class),
-            is(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))));
+        assertThat(classifyCuisineResponse.getCuisine(), is(Cuisines.MEDITERRANEAN.title));
+        assertThat(classifyCuisineResponse.getConfidence(), is(0.0));
+        assertThat(classifyCuisineResponse.getCuisines().containsAll(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))),
+            is(true));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"en", "de"})
     @DisplayName("Verify the given language support")
     void testClassifyCuisineNotValidLanguageParam(String language) {
-        Response response = given()
-            .baseUri(getBaseUrl())
-            .queryParam("apiKey", getApiKey())
-            .queryParam("language", language)
-            .contentType(ContentType.URLENC)
+        ClassifyCuisineResponse classifyCuisineResponse =
+            given()
+                .spec(getRequestUrlencSpecification())
+                .contentType(ContentType.URLENC)
             .when()
-            .post("recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine")
             .then()
-            .extract()
-            .response();
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ClassifyCuisineResponse.class);
 
-        assertThat(response.header("Content-Type"), is("application/json"));
-        assertThat(response.jsonPath().get("cuisine"), is(Cuisines.MEDITERRANEAN.title));
-        assertThat(response.jsonPath().get("confidence"), is(0.0f));
-        assertThat(response.jsonPath().getList("cuisines", String.class),
-            is(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))));
+        assertThat(classifyCuisineResponse.getCuisine(), is(Cuisines.MEDITERRANEAN.title));
+        assertThat(classifyCuisineResponse.getConfidence(), is(0.0));
+        assertThat(classifyCuisineResponse.getCuisines().containsAll(new ArrayList<>(Arrays.asList(Cuisines.MEDITERRANEAN.title, Cuisines.EUROPEAN.title, Cuisines.ITALIAN.title))),
+            is(true));
     }
 
     @Test
@@ -131,21 +126,15 @@ public class SpoonAcularPostTest extends AbstractTest {
     void testClassifyCuisineNotValidLanguageParam() {
         Response response =
             given()
-                .baseUri(getBaseUrl())
-                .queryParam("apiKey", getApiKey())
+                .spec(getRequestUrlencSpecification())
                 .queryParam("language", UNSUPPORTED_LANGUAGE)
-                .contentType(ContentType.URLENC)
-                .log()
-                .all()
             .when()
-                .post("recipes/cuisine")
+                .post(getBaseUrl() + "recipes/cuisine")
             .then()
-                .log()
-                .all()
+                .contentType(ContentType.HTML)
                 .extract()
                 .response();
 
-        assertThat(response.header("Content-Type"), is("text/html;charset=utf-8"));
         assertThat(response.getBody().asString().contains(ERROR_MESSAGE), is(true));
     }
 }
