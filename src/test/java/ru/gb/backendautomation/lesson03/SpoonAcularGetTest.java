@@ -6,6 +6,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.gb.backendautomation.model.complexSearch.ComplexSearchResponse;
+import ru.gb.backendautomation.model.complexSearch.Nutrient;
+import ru.gb.backendautomation.model.complexSearch.Result;
 
 import java.util.Random;
 
@@ -14,70 +17,79 @@ public class SpoonAcularGetTest extends AbstractTest {
     @Test
     @DisplayName("Verify a case with no parameters")
     void testComplexSearchNoParams() {
-        Integer offsetData = given()
-            .baseUri(getBaseUrl())
-            .param("apiKey", getApiKey())
-        .when()
-            .get("recipes/complexSearch")
-        .then()
-            .statusCode(200)
-            .extract().jsonPath().get("offset");
+        ComplexSearchResponse complexSearchItem =
+            given()
+                .spec(getRequestJsonSpecification())
+            .when()
+                .get(getBaseUrl() + "recipes/complexSearch")
+            .then()
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class);
 
-        assertThat(offsetData, is(0)); 
+        assertThat(complexSearchItem.getOffset(), is(0));
     }
 
     @Test
     @DisplayName("Verify a case with a positive 'offset' parameter value")
     void testComplexSearchPositiveOffset() {
         int randomOffset = new Random().nextInt(5) + 1;
-        Integer offsetData =
+        ComplexSearchResponse complexSearchItem =
             given()
-                .baseUri(getBaseUrl())
-                .param("apiKey", getApiKey())
+                .spec(getRequestJsonSpecification())
                 .param("offset", randomOffset)
             .when()
-                .get("recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch")
             .then()
-                .statusCode(200)
-                .extract().jsonPath().get("offset");
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class);
 
-        assertThat(offsetData, is(randomOffset));
+        assertThat(complexSearchItem.getOffset(), is(randomOffset));
     }
 
     @Test
     @DisplayName("Verify a case with a positive 'number' parameter value")
     void testComplexSearchPositiveNumber() {
         int randomNumber = new Random().nextInt(10) + 1;
-        Integer offsetData =
+        ComplexSearchResponse complexSearchItem =
             given()
-                .baseUri(getBaseUrl())
-                .param("apiKey", getApiKey())
+                .spec(getRequestJsonSpecification())
                 .param("number", randomNumber)
             .when()
-                .get("recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch")
             .then()
-                .statusCode(200)
-                .extract().jsonPath().get("number");
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class);
 
-        assertThat(offsetData, is(randomNumber));
+        assertThat(complexSearchItem.getNumber(), is(randomNumber));
     }
 
     @Test
     @DisplayName("Verify a case with a negative 'number' parameter value")
     void testComplexSearchNegativeNumber() {
         int randomNumber = - new Random().nextInt(10);
-        Integer offsetData =
+        ComplexSearchResponse complexSearchItem =
             given()
-                .baseUri(getBaseUrl())
-                .param("apiKey", getApiKey())
+                .spec(getRequestJsonSpecification())
                 .param("number", randomNumber)
             .when()
-                .get("recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch")
             .then()
-                .statusCode(200)
-                .extract().jsonPath().get("number");
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class);
 
-        assertThat(offsetData, is(1));
+        assertThat(complexSearchItem.getNumber(), is(1));
     }
 
     @Test
@@ -85,26 +97,38 @@ public class SpoonAcularGetTest extends AbstractTest {
     void testComplexSearchMaxProteinFiltration() {
         Integer totalNumberData =
             given()
-                .baseUri(getBaseUrl())
-                .param("apiKey", getApiKey())
+                .spec(getRequestJsonSpecification())
             .when()
-                .get("recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch")
             .then()
-                .statusCode(200)
-                .extract().jsonPath().get("totalResults");
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class)
+                .getTotalResults();
 
-        int randomMaxProteinValue = new Random().nextInt(30);
-        Integer filteredNumberData =
+        int randomMaxProteinValue = new Random().nextInt(3);
+        ComplexSearchResponse filteredComplexSearchItem =
             given()
-                .baseUri(getBaseUrl())
-                .param("apiKey", getApiKey())
+                .spec(getRequestJsonSpecification())
                 .param("maxProtein", randomMaxProteinValue)
             .when()
-                .get("recipes/complexSearch")
+                .get(getBaseUrl() + "recipes/complexSearch")
             .then()
-                .statusCode(200)
-                .extract().jsonPath().get("totalResults");
+                .spec(getResponseSpecification())
+                .extract()
+                .response()
+                .body()
+                .as(ComplexSearchResponse.class);
 
-        assertThat(totalNumberData > filteredNumberData, is(true));
+        assertThat(totalNumberData > filteredComplexSearchItem.getTotalResults(), is(true));
+
+        for(Result result : filteredComplexSearchItem.getResults()) {
+            for(Nutrient nutrient : result.getNutrition().getNutrients()) {
+                assertThat(nutrient.getName(), is("Protein"));
+                assertThat(nutrient.getAmount() < randomMaxProteinValue, is(true));
+            }
+        }
     }
 }
