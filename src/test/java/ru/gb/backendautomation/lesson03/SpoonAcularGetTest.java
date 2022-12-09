@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.gb.backendautomation.model.complexSearch.ComplexSearchResponse;

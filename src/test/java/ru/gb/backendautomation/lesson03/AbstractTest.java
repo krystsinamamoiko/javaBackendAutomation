@@ -30,7 +30,7 @@ public class AbstractTest {
         configFile = new FileInputStream("src/main/resources/my.properties");
         prop.load(configFile);
 
-        apiKey =  prop.getProperty("apiKey");
+        apiKey = prop.getProperty("apiKey");
         baseUrl= prop.getProperty("base_url");
 
         //for logging request and responses in Allure reporting
